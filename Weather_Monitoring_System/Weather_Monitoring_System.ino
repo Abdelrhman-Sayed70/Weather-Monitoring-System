@@ -4,6 +4,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085.h>
 #include <SFE_BMP180.h>
+#include<BlynkSimpleEsp8266.h>
 
 // DHT Intializing
 #define DHTPIN D1 
@@ -14,9 +15,15 @@ DHT dht(DHTPIN, DHTTYPE);
 #define ALTITUDE 90.0
 SFE_BMP180 BMP;
 
-// WiFi Credentials
+// Blynk Credentials
+#define BLYNK_TEMPLATE_ID "TMPL2BX3cycI1"
+#define BLYNK_TEMPLATE_NAME "Weather Monitoring System"
+#define BLYNK_AUTH_TOKEN "PFYI5vZ2flvQA0HS4J5rmzz-8n28zxL6"
+char auth[] = BLYNK_AUTH_TOKEN;
+
+// WIFI Credentials
 const char* ssid = "Gaber";
-const char* password = "family1988imbabaabdo"; // family1988imbabaabdo
+const char* pass = "family1988imbabaabdo"; // family1988imbabaabdo
 
 // Pins
 const int LDRPin = D0;
@@ -30,6 +37,9 @@ void setup() {
 
   // Connecting WIFI
   ConnectWifi();
+
+  // Connecting to Blynk
+  Blynk.begin(auth, ssid, pass, "blynk.cloud", 80);
   
   // Sensors Running
   dht.begin();
@@ -46,6 +56,7 @@ void loop() {
   LDRSensor();
   DHT11sensor();
   BMP180Sensor();
+  Blynk.run();
   delay(1000);
 }
 
@@ -55,7 +66,7 @@ void ConnectWifi(){
   Serial.print(ssid);
   Serial.println(" Network");
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, pass);
   Serial.print("Connecting");
   while(WiFi.status() != WL_CONNECTED){
       delay(1000);
@@ -74,12 +85,20 @@ void LDRSensor() {
   if (value == HIGH) {
     // DARK
     Serial.println("Dark");
+    
+    // Send Darkness to Blynk
+    Blynk.virtualWrite(V4, "It's Dark");
+    
     // Turn On Leds
     digitalWrite(LEDPin, HIGH);
   } 
   else {  
     // Light
     Serial.println("Light");
+    
+    // Send Light to Blynk
+    Blynk.virtualWrite(V4, "It's Light");
+    
     // Turn Off Leds
     digitalWrite(LEDPin, LOW);
   }
@@ -89,97 +108,81 @@ void LDRSensor() {
 // =========================================> DHT11 [Temperature & Humidity] <======================================
 void DHT11sensor() {
   Serial.println("DHT11 Sensor [Temperature & Humidity]");
- 
+
+  // Read & Check
   float HumidityReading = dht.readHumidity();
   float TemperatureReading = dht.readTemperature();
-
   if (isnan(HumidityReading) || isnan(TemperatureReading)) {
     Serial.println("Failed To Read From DHT Sensor :(");
     return;
   }
-  
   Serial.println("Read From DHT is Done Successfully");
-  
+
+  // Print Readings to Serial
   Serial.print("DHT Temperature: ");
   Serial.println(TemperatureReading);
-
+  
   Serial.print("DHT Humidity: ");
   Serial.println(HumidityReading);
-
+  
   Serial.println("=================================================");
+  
+  // Send Readings to Blynk
+  Blynk.virtualWrite(V0, TemperatureReading);
+  Blynk.virtualWrite(V1, HumidityReading);
 }
 
 // =========================================> BMP180 [Pressure & Altitude] <======================================
 void BMP180Sensor(){
-  Serial.println("BMP180 Sensor [Pressure & Altitude]");
+  Serial.println("BMP180 Simple Sensor [Pressure & Altitude]");
   char status;
-  double T, P, p0, a;
+  double TemperatureC, TemperatureF, Pressure, PressureSeaLevel, Altitude;
+
+  // Get BMP Temperature
+  status =  BMP.startTemperature();
+  if (status == 0){
+    Serial.println("Can't Read BMP Temprature");
+    return;
+  }
+  delay(status);
+  status = BMP.getTemperature(TemperatureC);
+  TemperatureF = (9.0 / 5.0) * TemperatureC + 32.0;
+
+  // Get BMP Pressure in mb
+  status = BMP.startPressure(3);// 0 to 3
+  if (status == 0){
+    Serial.println("Can't Read BMP Pressure");
+    return;
+  }
+  delay(status);
+  status = BMP.getPressure(Pressure, TemperatureC);
+  if (status == 0){
+    Serial.println("Can't Read BMP Pressure");
+    return;
+  }
+  
+  // Get BMP Altitude
+  PressureSeaLevel = BMP.sealevel(Pressure, ALTITUDE);
+  Altitude = BMP.altitude(Pressure, PressureSeaLevel);
+
+  // Print Results in Serial
+  Serial.print("Temperature in C: ");
+  Serial.print(TemperatureC);
+  Serial.print(" °C, Temprature in °F = ");
+  Serial.println(TemperatureF);
+
+  Serial.print("Pressure: ");
+  Serial.print(Pressure);
+  Serial.println(" mb");
 
   Serial.print("Altitude: ");
-  Serial.print(ALTITUDE, 0);
-  Serial.print(" Meters, ");
-  Serial.print(ALTITUDE * 3.28084, 0);
-  Serial.println(" Feet");
-  Serial.println();
-
-  // Pressure Reading 
-  status = BMP.startTemperature();
-  if (status != 0)
-  {
-    // Wait For The Temperature Measurement To Complete
-    delay(status);
-    status = BMP.getTemperature(T);
-    if (status != 0)
-    {
-      Serial.print("BMP Temperature: ");
-      Serial.print(T,2);
-      Serial.print(" C°, ");
-      Serial.print((9.0 / 5.0) * T + 32.0, 2);
-      Serial.println(" F°");
-      Serial.println();
-      
-      // Pressure & Altitude Measurement
-      status = BMP.startPressure(3);
-      if (status != 0)
-      {
-        delay(status);
-        
-        status = BMP.getPressure(P, T);
-        if (status != 0)
-        {
-          // Pressure
-          Serial.print("BMP Pressure: ");
-          Serial.print(P,2);
-          Serial.print(" mb, ");
-          Serial.print(P * 0.0295333727, 2);
-          Serial.println(" Hg");
-
-          // Pressure using Sea Level
-          p0 = BMP.sealevel(P,ALTITUDE); // we're at 90 meters (Boulder, CO)
-          Serial.print("BMP Relative (Sea-Level) Pressure: ");
-          Serial.print(p0 * 0.0295333727, 2);
-          Serial.println(" Hg");
-          Serial.println();
-
-          // Altitude
-          a = BMP.altitude(P, p0);
-          Serial.print("BMP Altitude: ");
-          Serial.print(a, 0);
-          Serial.println(" Meters");
-        }
-        else 
-          Serial.println("error retrieving pressure measurement");
-      }
-      else 
-        Serial.println("error starting pressure measurement");
-    }
-    else 
-      Serial.println("error retrieving temperature measurement");
-  }
-  else
-    Serial.println("error starting temperature measurement");
-
+  Serial.print(Altitude);
+  Serial.println(" Meters");
   Serial.println("=================================================");
+
+  // Send Readings to Blynk
+  Blynk.virtualWrite(V2, Pressure);
+  Blynk.virtualWrite(V3, Altitude);
 }
 
 void BMPRunning(){
