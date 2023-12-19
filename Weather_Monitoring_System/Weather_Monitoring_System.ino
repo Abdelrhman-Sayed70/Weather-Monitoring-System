@@ -255,7 +255,12 @@ String sendHTML(float DHT_Temperature , float DHT_Humidity , float BMP_Temperatu
   ptr+= "                <h1>LDR Sensor</h1>\n"
   ptr+= "                <div class=\"light\">\n"
   ptr+= "                    <span>\n"
-  ptr+= "                        <i class=\"bi bi-lightbulb-fill\"></i>\n"
+  if((String)LDR_Lightness == "Light"){
+      ptr+= "                        <i class=\"bi bi-lightbulb-fill\"></i>\n"
+  }
+  else {
+      ptr+= "                        <i class=\"bi bi-lightbulb\"></i>\n"
+  }
   ptr+= "                        <p>Light/Dark</p>\n"
   ptr+= "                    </span>\n"
   ptr+= "                    <p>"
