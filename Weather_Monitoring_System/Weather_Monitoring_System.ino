@@ -20,7 +20,7 @@ const char* password = "family1988imbabaabdo"; // family1988imbabaabdo
 
 // Pins
 const int LDRPin = D0;
-const int LEDPin = D5;
+const int LEDPin = D2;
 
 void setup() {
   // Preprocessing
@@ -46,7 +46,7 @@ void loop() {
   LDRSensor();
   DHT11sensor();
   BMP180Sensor();
-  delay(6000);
+  delay(1000);
 }
 
 // =========================================> Connecting To WIFI <======================================
@@ -138,7 +138,7 @@ void BMP180Sensor(){
       Serial.println(" F°");
       Serial.println();
       
-      // Pressure Measurement
+      // Pressure & Altitude Measurement
       status = BMP.startPressure(3);
       if (status != 0)
       {
@@ -147,25 +147,21 @@ void BMP180Sensor(){
         status = BMP.getPressure(P, T);
         if (status != 0)
         {
+          // Pressure
           Serial.print("BMP Pressure: ");
           Serial.print(P,2);
           Serial.print(" mb, ");
           Serial.print(P * 0.0295333727, 2);
           Serial.println(" Hg");
 
-          // The pressure sensor returns abolute pressure, which varies with altitude.
-          // To remove the effects of altitude, use the sealevel function and your current altitude.
-          
+          // Pressure using Sea Level
           p0 = BMP.sealevel(P,ALTITUDE); // we're at 90 meters (Boulder, CO)
           Serial.print("BMP Relative (Sea-Level) Pressure: ");
           Serial.print(p0 * 0.0295333727, 2);
           Serial.println(" Hg");
           Serial.println();
-          // On the other hand, if you want to determine your altitude from the pressure reading,
-          // use the altitude function along with a baseline pressure (sea-level or other).
-          // Parameters: P = absolute pressure in mb, p0 = baseline pressure in mb.
-          // Result: a = altitude in m.
 
+          // Altitude
           a = BMP.altitude(P, p0);
           Serial.print("BMP Altitude: ");
           Serial.print(a, 0);
