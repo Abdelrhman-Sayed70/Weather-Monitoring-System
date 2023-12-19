@@ -130,6 +130,11 @@ void DHT11sensor() {
   // Send Readings to Blynk
   Blynk.virtualWrite(V0, TemperatureReading);
   Blynk.virtualWrite(V1, HumidityReading);
+
+  // Alert 
+  if(TemperatureReading > 30){
+    Blynk.logEvent("temperature_alert");
+  }
 }
 
 // =========================================> BMP180 [Pressure & Altitude] <======================================
@@ -147,7 +152,7 @@ void BMP180Sensor(){
   delay(status);
   status = BMP.getTemperature(TemperatureC);
   TemperatureF = (9.0 / 5.0) * TemperatureC + 32.0;
-
+  
   // Get BMP Pressure in mb
   status = BMP.startPressure(3);// 0 to 3
   if (status == 0){
