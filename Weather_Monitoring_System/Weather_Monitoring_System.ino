@@ -5,7 +5,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085.h>
 #include <SFE_BMP180.h>
-#include<BlynkSimpleEsp8266.h>
+#include <BlynkSimpleEsp8266.h>
 
 // DHT Intializing
 #define DHTPIN D1 
@@ -192,7 +192,7 @@ void BMP180Sensor(){
   // Print Results in Serial
   Serial.print("Temperature in C: ");
   Serial.print(TemperatureC);
-  Serial.print(" °C, Temprature in °F = ");
+  Serial.print(" °C, Temperature in °F = ");
   Serial.println(TemperatureF);
 
   Serial.print("Pressure: ");

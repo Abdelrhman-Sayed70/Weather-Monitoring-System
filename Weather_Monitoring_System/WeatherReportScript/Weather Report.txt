@@ -1,3 +1,11 @@
+....
+Wifi Connected Success!
+NodeMCU IP Address: 192.168.1.5
+
+Blynk Connected Success!
+
+BMP Running..
+BMP180 Runs Successfully :)
 ==============================================================================
 _________Weather Monitoring System_________
 LDR Sensor [Light Detection]
@@ -5,12 +13,12 @@ Dark
 =================================================
 DHT11 Sensor [Temperature & Humidity]
 Read From DHT is Done Successfully
-DHT Temperature: 20.00
-DHT Humidity: 49.00
+DHT Temperature: 19.80
+DHT Humidity: 48.00
 =================================================
 BMP180 Sensor [Pressure & Altitude]
-Temperature in C: 22.49 °C, Temprature in °F = 72.47
-Pressure: 992.25 mb
+Temperature in C: 22.41 °C, Temperature in °F = 72.34
+Pressure: 992.15 mb
 Altitude: 90.00 Meters
 =================================================
 ==============================================================================
@@ -20,12 +28,12 @@ Dark
 =================================================
 DHT11 Sensor [Temperature & Humidity]
 Read From DHT is Done Successfully
-DHT Temperature: 20.00
-DHT Humidity: 49.00
+DHT Temperature: 19.80
+DHT Humidity: 48.00
 =================================================
 BMP180 Sensor [Pressure & Altitude]
-Temperature in C: 22.49 °C, Temprature in °F = 72.47
-Pressure: 992.30 mb
+Temperature in C: 22.40 °C, Temperature in °F = 72.31
+Pressure: 992.09 mb
 Altitude: 90.00 Meters
 =================================================
 ==============================================================================
@@ -35,26 +43,6 @@ Dark
 =================================================
 DHT11 Sensor [Temperature & Humidity]
 Read From DHT is Done Successfully
-DHT Temperature: 20.00
-DHT Humidity: 49.00
-=================================================
-BMP180 Sensor [Pressure & Altitude]
-Temperature in C: 22.50 °C, Temprature in °F = 72.50
-Pressure: 992.32 mb
-Altitude: 90.00 Meters
-=================================================
-==============================================================================
-_________Weather Monitoring System_________
-LDR Sensor [Light Detection]
-Dark
-=================================================
-DHT11 Sensor [Temperature & Humidity]
-Read From DHT is Done Successfully
-DHT Temperature: 20.00
-DHT Humidity: 49.00
-=================================================
-BMP180 Sensor [Pressure & Altitude]
-Temperature in C: 22.49 °C, Temprature in °F = 72.47
-Pressure: 992.21 mb
-Altitude: 90.00 Meters
+DHT Temperature: 19.70
+DHT Humidity: 48.00
 =================================================
