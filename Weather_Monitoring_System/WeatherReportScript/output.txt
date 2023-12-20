@@ -1,0 +1,60 @@
+==============================================================================
+_________Weather Monitoring System_________
+LDR Sensor [Light Detection]
+Dark
+=================================================
+DHT11 Sensor [Temperature & Humidity]
+Read From DHT is Done Successfully
+DHT Temperature: 20.00
+DHT Humidity: 49.00
+=================================================
+BMP180 Sensor [Pressure & Altitude]
+Temperature in C: 22.49 °C, Temprature in °F = 72.47
+Pressure: 992.25 mb
+Altitude: 90.00 Meters
+=================================================
+==============================================================================
+_________Weather Monitoring System_________
+LDR Sensor [Light Detection]
+Dark
+=================================================
+DHT11 Sensor [Temperature & Humidity]
+Read From DHT is Done Successfully
+DHT Temperature: 20.00
+DHT Humidity: 49.00
+=================================================
+BMP180 Sensor [Pressure & Altitude]
+Temperature in C: 22.49 °C, Temprature in °F = 72.47
+Pressure: 992.30 mb
+Altitude: 90.00 Meters
+=================================================
+==============================================================================
+_________Weather Monitoring System_________
+LDR Sensor [Light Detection]
+Dark
+=================================================
+DHT11 Sensor [Temperature & Humidity]
+Read From DHT is Done Successfully
+DHT Temperature: 20.00
+DHT Humidity: 49.00
+=================================================
+BMP180 Sensor [Pressure & Altitude]
+Temperature in C: 22.50 °C, Temprature in °F = 72.50
+Pressure: 992.32 mb
+Altitude: 90.00 Meters
+=================================================
+==============================================================================
+_________Weather Monitoring System_________
+LDR Sensor [Light Detection]
+Dark
+=================================================
+DHT11 Sensor [Temperature & Humidity]
+Read From DHT is Done Successfully
+DHT Temperature: 20.00
+DHT Humidity: 49.00
+=================================================
+BMP180 Sensor [Pressure & Altitude]
+Temperature in C: 22.49 °C, Temprature in °F = 72.47
+Pressure: 992.21 mb
+Altitude: 90.00 Meters
+=================================================

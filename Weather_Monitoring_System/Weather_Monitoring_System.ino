@@ -40,7 +40,7 @@ String LDR_Lightness;
 void setup() {
   // Preprocessing
   Serial.begin(115200);
-  delay(3000);
+  delay(5000);
   Serial.println("_________Preprocessing_________");
 
   // Connecting WIFI
