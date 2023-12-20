@@ -30,10 +30,13 @@ const char* pass = "family1988imbabaabdo"; // family1988imbabaabdo
 const int LDRPin = D0;
 const int LEDPin = D4;
 
+// Web Server
+ESP8266WebServer server(80);
+
+// Sensors Readings Passed To Web Server
 float DHT_Temperature, DHT_Humidity, BMP_Temperature, BMP_Amplitude, BMP_Pressure;
 String LDR_Lightness;
 
-ESP8266WebServer server(80);
 void setup() {
   // Preprocessing
   Serial.begin(115200);
@@ -55,6 +58,7 @@ void setup() {
   pinMode(LDRPin, INPUT);  
   pinMode(LEDPin, OUTPUT);
 
+  // Run Server
   server.on("/" , handle_connected);
   server.onNotFound(handle_notfound);
   server.begin();
@@ -71,6 +75,159 @@ void loop() {
   delay(1000);
 }
 
+// =========================================> Connecting To WIFI <======================================
+void ConnectWifi(){
+  Serial.print("Wifi Connecting To ");
+  Serial.print(ssid);
+  Serial.println(" Network");
+
+  WiFi.begin(ssid, pass);
+  Serial.print("Connecting");
+  while(WiFi.status() != WL_CONNECTED){
+      delay(1000);
+      Serial.print(".");        
+  }
+  Serial.println("\nWifi Connected Success!");
+  Serial.print("NodeMCU IP Address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+}
+
+// =========================================> LDR [Light] <======================================
+void LDRSensor() {
+  Serial.println("LDR Sensor [Light Detection]");
+  bool value = digitalRead(LDRPin);
+  if (value == HIGH) {
+    // DARK
+    Serial.println("Dark");
+    
+    // Send Darkness to Blynk
+    Blynk.virtualWrite(V4, "It's Dark");
+    
+    // Turn On Leds
+    digitalWrite(LEDPin, HIGH);
+    LDR_Lightness = "Dark";
+  } 
+  else {  
+    // Light
+    Serial.println("Light");
+    
+    // Send Light to Blynk
+    Blynk.virtualWrite(V4, "It's Light");
+    
+    // Turn Off Leds
+    digitalWrite(LEDPin, LOW);
+    LDR_Lightness = "Light";
+  }
+  Serial.println("=================================================");
+}
+
+// =========================================> DHT11 [Temperature & Humidity] <======================================
+void DHT11sensor() {
+  Serial.println("DHT11 Sensor [Temperature & Humidity]");
+
+  // Read & Check
+  float HumidityReading = dht.readHumidity();
+  float TemperatureReading = dht.readTemperature();
+  if (isnan(HumidityReading) || isnan(TemperatureReading)) {
+    Serial.println("Failed To Read From DHT Sensor :(");
+    return;
+  }
+  Serial.println("Read From DHT is Done Successfully");
+
+  // Print Readings to Serial
+  Serial.print("DHT Temperature: ");
+  Serial.println(TemperatureReading);
+  
+  Serial.print("DHT Humidity: ");
+  Serial.println(HumidityReading);
+  
+  Serial.println("=================================================");
+  DHT_Temperature = TemperatureReading;
+  DHT_Humidity = HumidityReading;
+  
+  // Send Readings to Blynk
+  Blynk.virtualWrite(V0, TemperatureReading);
+  Blynk.virtualWrite(V1, HumidityReading);
+
+  // Alert 
+  if(TemperatureReading > 30){
+    Blynk.logEvent("temperature_alert");
+  }
+}
+
+// =========================================> BMP180 [Pressure & Altitude] <======================================
+void BMP180Sensor(){
+  Serial.println("BMP180 Sensor [Pressure & Altitude]");
+  char status;
+  double TemperatureC, TemperatureF, Pressure, PressureSeaLevel, Altitude;
+
+  // Get BMP Temperature
+  status =  BMP.startTemperature();
+  if (status == 0){
+    Serial.println("Can't Read BMP Temprature");
+    return;
+  }
+  delay(status);
+  status = BMP.getTemperature(TemperatureC);
+  TemperatureF = (9.0 / 5.0) * TemperatureC + 32.0;
+  
+  // Get BMP Pressure in mb
+  status = BMP.startPressure(3);// 0 to 3
+  if (status == 0){
+    Serial.println("Can't Read BMP Pressure");
+    return;
+  }
+  delay(status);
+  status = BMP.getPressure(Pressure, TemperatureC);
+  if (status == 0){
+    Serial.println("Can't Read BMP Pressure");
+    return;
+  }
+  
+  // Get BMP Altitude
+  PressureSeaLevel = BMP.sealevel(Pressure, ALTITUDE);
+  Altitude = BMP.altitude(Pressure, PressureSeaLevel);
+
+  // Print Results in Serial
+  Serial.print("Temperature in C: ");
+  Serial.print(TemperatureC);
+  Serial.print(" °C, Temprature in °F = ");
+  Serial.println(TemperatureF);
+
+  Serial.print("Pressure: ");
+  Serial.print(Pressure);
+  Serial.println(" mb");
+
+  Serial.print("Altitude: ");
+  Serial.print(Altitude);
+  Serial.println(" Meters");
+  Serial.println("=================================================");
+  
+  BMP_Pressure = Pressure;
+  BMP_Amplitude = Altitude;
+  BMP_Temperature = TemperatureC;
+
+  // Send Readings to Blynk
+  Blynk.virtualWrite(V2, Pressure);
+  Blynk.virtualWrite(V3, Altitude);
+}
+
+void BMPRunning(){
+  Serial.println("BMP Running..");
+  Wire.begin(D3, D2); // SDA, SCL (From Most Left)
+  
+  if (BMP.begin()) {
+    Serial.println("BMP180 Runs Successfully :)");
+  }
+  
+  else{
+    Serial.println("BMP180 Can't Run :(");
+    while(1); // Pause Forever.
+  }
+}
+
+// =========================================> Web Server <======================================
 void handle_notfound() {
   server.send(404 , "text/plain" , "Not Found");
 }
@@ -279,157 +436,4 @@ String sendHTML(float DHT_Temperature , float DHT_Humidity , float BMP_Temperatu
   ptr+= "</html>";
   
   return ptr;
-}
-
-
-// =========================================> Connecting To WIFI <======================================
-void ConnectWifi(){
-  Serial.print("Wifi Connecting To ");
-  Serial.print(ssid);
-  Serial.println(" Network");
-
-  WiFi.begin(ssid, pass);
-  Serial.print("Connecting");
-  while(WiFi.status() != WL_CONNECTED){
-      delay(1000);
-      Serial.print(".");        
-  }
-  Serial.println("\nWifi Connected Success!");
-  Serial.print("NodeMCU IP Address: ");
-  Serial.println(WiFi.localIP());
-  Serial.println();
-}
-
-// =========================================> LDR [Light] <======================================
-void LDRSensor() {
-  Serial.println("LDR Sensor [Light Detection]");
-  bool value = digitalRead(LDRPin);
-  if (value == HIGH) {
-    // DARK
-    Serial.println("Dark");
-    
-    // Send Darkness to Blynk
-    Blynk.virtualWrite(V4, "It's Dark");
-    
-    // Turn On Leds
-    digitalWrite(LEDPin, HIGH);
-    LDR_Lightness = "Dark";
-  } 
-  else {  
-    // Light
-    Serial.println("Light");
-    
-    // Send Light to Blynk
-    Blynk.virtualWrite(V4, "It's Light");
-    
-    // Turn Off Leds
-    digitalWrite(LEDPin, LOW);
-    LDR_Lightness = "Light";
-  }
-  Serial.println("=================================================");
-}
-
-// =========================================> DHT11 [Temperature & Humidity] <======================================
-void DHT11sensor() {
-  Serial.println("DHT11 Sensor [Temperature & Humidity]");
-
-  // Read & Check
-  float HumidityReading = dht.readHumidity();
-  float TemperatureReading = dht.readTemperature();
-  if (isnan(HumidityReading) || isnan(TemperatureReading)) {
-    Serial.println("Failed To Read From DHT Sensor :(");
-    return;
-  }
-  Serial.println("Read From DHT is Done Successfully");
-
-  // Print Readings to Serial
-  Serial.print("DHT Temperature: ");
-  Serial.println(TemperatureReading);
-  
-  Serial.print("DHT Humidity: ");
-  Serial.println(HumidityReading);
-  
-  Serial.println("=================================================");
-  DHT_Temperature = TemperatureReading;
-  DHT_Humidity = HumidityReading;
-  
-  // Send Readings to Blynk
-  Blynk.virtualWrite(V0, TemperatureReading);
-  Blynk.virtualWrite(V1, HumidityReading);
-
-  // Alert 
-  if(TemperatureReading > 30){
-    Blynk.logEvent("temperature_alert");
-  }
-}
-
-// =========================================> BMP180 [Pressure & Altitude] <======================================
-void BMP180Sensor(){
-  Serial.println("BMP180 Simple Sensor [Pressure & Altitude]");
-  char status;
-  double TemperatureC, TemperatureF, Pressure, PressureSeaLevel, Altitude;
-
-  // Get BMP Temperature
-  status =  BMP.startTemperature();
-  if (status == 0){
-    Serial.println("Can't Read BMP Temprature");
-    return;
-  }
-  delay(status);
-  status = BMP.getTemperature(TemperatureC);
-  TemperatureF = (9.0 / 5.0) * TemperatureC + 32.0;
-  
-  // Get BMP Pressure in mb
-  status = BMP.startPressure(3);// 0 to 3
-  if (status == 0){
-    Serial.println("Can't Read BMP Pressure");
-    return;
-  }
-  delay(status);
-  status = BMP.getPressure(Pressure, TemperatureC);
-  if (status == 0){
-    Serial.println("Can't Read BMP Pressure");
-    return;
-  }
-  
-  // Get BMP Altitude
-  PressureSeaLevel = BMP.sealevel(Pressure, ALTITUDE);
-  Altitude = BMP.altitude(Pressure, PressureSeaLevel);
-
-  // Print Results in Serial
-  Serial.print("Temperature in C: ");
-  Serial.print(TemperatureC);
-  Serial.print(" °C, Temprature in °F = ");
-  Serial.println(TemperatureF);
-
-  Serial.print("Pressure: ");
-  Serial.print(Pressure);
-  Serial.println(" mb");
-
-  Serial.print("Altitude: ");
-  Serial.print(Altitude);
-  Serial.println(" Meters");
-  Serial.println("=================================================");
-  
-  BMP_Pressure = Pressure;
-  BMP_Amplitude = Altitude;
-  BMP_Temperature = TemperatureC;
-
-  // Send Readings to Blynk
-  Blynk.virtualWrite(V2, Pressure);
-  Blynk.virtualWrite(V3, Altitude);
-}
-
-void BMPRunning(){
-  Serial.println("BMP Running..");
-  Wire.begin(D3, D2); // SDA, SCL (From Most Left)
-  
-  if (BMP.begin()) {
-    Serial.println("BMP180 Runs Successfully :)");
-  }
-  
-  else{
-    Serial.println("BMP180 Can't Run :(");
-    while(1); // Pause Forever.
-  }
 }
