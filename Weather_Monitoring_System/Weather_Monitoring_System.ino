@@ -23,8 +23,8 @@ SFE_BMP180 BMP;
 char auth[] = BLYNK_AUTH_TOKEN;
 
 // WIFI Credentials
-const char* ssid = "Gaber";
-const char* pass = "family1988imbabaabdo"; // family1988imbabaabdo
+const char* ssid = "***";
+const char* pass = "***";
 
 // Pins
 const int LDRPin = D0;
